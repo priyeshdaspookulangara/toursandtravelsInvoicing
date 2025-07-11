@@ -1,0 +1,4 @@
+Placeholder for company logo.
+If you want to use a logo, replace this file with an actual image (e.g., a PNG file)
+and ensure the path in `config.php` (COMPANY_LOGO_PATH) is correct.
+The `view_invoice.php` will display it if found. Max recommended size around 150px width.

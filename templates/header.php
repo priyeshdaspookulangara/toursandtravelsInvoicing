@@ -23,6 +23,11 @@ require_once __DIR__ . '/../config.php'; // Adjust path as necessary
         nav ul li { display: inline; margin-right: 20px; }
         nav ul li a { color: white; text-decoration: none; padding: 10px 15px; display: inline-block; }
         nav ul li a:hover { background-color: #555; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-menu { display: none; position: absolute; background-color: #444; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; list-style-type: none; padding: 0; margin: 0; }
+        .dropdown-menu li a { color: white; padding: 12px 16px; text-decoration: none; display: block; }
+        .dropdown-menu li a:hover { background-color: #555; }
+        .dropdown:hover .dropdown-menu { display: block; }
         .content { padding: 20px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; }
@@ -64,7 +69,15 @@ require_once __DIR__ . '/../config.php'; // Adjust path as necessary
             <li><a href="<?php echo APP_BASE_URL; ?>index.php">Dashboard (Invoices)</a></li>
             <li><a href="<?php echo APP_BASE_URL; ?>create_invoice.php">Create Invoice</a></li>
             <li><a href="<?php echo APP_BASE_URL; ?>list_clients.php">Manage Clients</a></li>
-            <li><a href="<?php echo APP_BASE_URL; ?>list_packages.php">Manage Packages</a></li>
+            <li><a href="<?php echo APP_BASE_URL; ?>list_services.php">Manage Services</a></li>
+            <li><a href="<?php echo APP_BASE_URL; ?>list_expenses.php">Manage Expenses</a></li>
+            <li class="dropdown">
+                <a href="#">Reports</a>
+                <ul class="dropdown-menu">
+                    <li><a href="<?php echo APP_BASE_URL; ?>report_profit_loss.php">Profit & Loss</a></li>
+                    <li><a href="<?php echo APP_BASE_URL; ?>report_vat.php">VAT Report</a></li>
+                </ul>
+            </li>
             <li><a href="<?php echo APP_BASE_URL; ?>logout.php">Logout (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a></li>
         <?php else: ?>
             <li><a href="<?php echo APP_BASE_URL; ?>login.php">Login</a></li>

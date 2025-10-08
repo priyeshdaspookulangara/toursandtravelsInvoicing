@@ -1,7 +1,7 @@
 -- Database: invoice_system
 
 -- Table structure for table `users`
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `username` VARCHAR(50) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE `users` (
 );
 
 -- Table structure for table `clients`
-CREATE TABLE `clients` (
+CREATE TABLE IF NOT EXISTS `clients` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(100) NOT NULL,
   `address` TEXT,
@@ -19,8 +19,8 @@ CREATE TABLE `clients` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for table `packages` (for services/products)
-CREATE TABLE `packages` (
+-- Table structure for table `services` (formerly packages)
+CREATE TABLE IF NOT EXISTS `services` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL,
   `description` TEXT,
@@ -29,7 +29,7 @@ CREATE TABLE `packages` (
 );
 
 -- Table structure for table `invoices`
-CREATE TABLE `invoices` (
+CREATE TABLE IF NOT EXISTS `invoices` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `invoice_number` VARCHAR(50) NOT NULL UNIQUE,
   `client_id` INT NOT NULL,
@@ -51,17 +51,56 @@ CREATE TABLE `invoices` (
 );
 
 -- Table structure for table `invoice_items`
-CREATE TABLE `invoice_items` (
+CREATE TABLE IF NOT EXISTS `invoice_items` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `invoice_id` INT NOT NULL,
-  `package_id` INT DEFAULT NULL, -- Can be NULL if it's a custom item not from predefined packages
+  `service_id` INT DEFAULT NULL, -- Can be NULL if it's a custom item not from predefined services
   `item_description` VARCHAR(255) NOT NULL,
   `quantity` INT NOT NULL DEFAULT 1,
   `unit_price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
   `total_price` DECIMAL(10, 2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
   FOREIGN KEY (`invoice_id`) REFERENCES `invoices`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`package_id`) REFERENCES `packages`(`id`) ON DELETE SET NULL -- Allows package deletion without deleting invoice items
+  FOREIGN KEY (`service_id`) REFERENCES `services`(`id`) ON DELETE SET NULL -- Allows service deletion without deleting invoice items
 );
+
+-- Chart of Accounts: The master list of all accounts.
+CREATE TABLE IF NOT EXISTS `chart_of_accounts` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `account_name` VARCHAR(255) NOT NULL UNIQUE,
+    `account_type` ENUM('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') NOT NULL,
+    `description` TEXT,
+    `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- General Ledger: Records all financial transactions (journal entries).
+CREATE TABLE IF NOT EXISTS `general_ledger` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `entry_date` DATE NOT NULL,
+    `account_id` INT NOT NULL,
+    `debit` DECIMAL(10, 2) DEFAULT 0.00,
+    `credit` DECIMAL(10, 2) DEFAULT 0.00,
+    `description` VARCHAR(255) NOT NULL,
+    `reference_type` VARCHAR(50), -- e.g., 'invoice', 'expense', 'payment'
+    `reference_id` INT, -- e.g., invoice_id, expense_id
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`account_id`) REFERENCES `chart_of_accounts`(`id`),
+    CONSTRAINT chk_debit_credit CHECK (debit > 0.00 OR credit > 0.00)
+);
+
+-- Expenses: To track all business expenses.
+CREATE TABLE IF NOT EXISTS `expenses` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `expense_date` DATE NOT NULL,
+    `vendor` VARCHAR(255),
+    `category_id` INT NOT NULL, -- Foreign key to an expense account in chart_of_accounts
+    `amount` DECIMAL(10, 2) NOT NULL,
+    `description` TEXT,
+    `receipt_url` VARCHAR(255), -- Optional path to a scanned receipt
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`category_id`) REFERENCES `chart_of_accounts`(`id`)
+);
+
 
 -- Default Company Details (Not in DB, will be in config.php, but noted here for completeness)
 -- Company Name: "Your Tours & Travels Company"
@@ -73,4 +112,7 @@ CREATE TABLE `invoice_items` (
 CREATE INDEX idx_invoices_client_id ON invoices(client_id);
 CREATE INDEX idx_invoices_status ON invoices(status);
 CREATE INDEX idx_invoice_items_invoice_id ON invoice_items(invoice_id);
-CREATE INDEX idx_invoice_items_package_id ON invoice_items(package_id);
+CREATE INDEX idx_invoice_items_service_id ON invoice_items(service_id);
+CREATE INDEX idx_gl_account_id ON general_ledger(account_id);
+CREATE INDEX idx_gl_reference ON general_ledger(reference_type, reference_id);
+CREATE INDEX idx_expenses_category_id ON expenses(category_id);

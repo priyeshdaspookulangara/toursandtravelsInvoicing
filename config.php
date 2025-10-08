@@ -15,11 +15,21 @@ define('COMPANY_WEBSITE', 'www.apextravels.com');
 define('COMPANY_LOGO_PATH', 'assets/images/logo.png'); // Example path, ensure this image exists or remove if not used
 
 // Application Settings
-define('APP_BASE_URL', 'http://localhost/invoice_generator/'); // Adjust to your local setup, include trailing slash
+define('APP_BASE_URL', 'http://localhost/'); // Adjust to your local setup, include trailing slash
+define('VAT_RATE', 5.00); // VAT Rate in percentage (e.g., 5.00 for 5%)
 
-// Error reporting - Recommended for development, turn off or log to file in production
-error_reporting(E_ALL);
+// --- Default Account IDs from Chart of Accounts ---
+// These should correspond to the IDs of the accounts created in `setup_accounts.php`
+// It's a good practice to define them here to avoid hardcoding IDs in the business logic.
+define('ACCOUNT_ID_CASH', 1);
+define('ACCOUNT_ID_ACCOUNTS_RECEIVABLE', 2);
+define('ACCOUNT_ID_SALES_REVENUE', 30); // Corrected from 10
+define('ACCOUNT_ID_VAT_PAYABLE', 11);
+
+// Error reporting - Force display for debugging
 ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {

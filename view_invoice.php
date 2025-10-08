@@ -1,17 +1,11 @@
 <?php
 require_once 'auth.php';
 require_once 'db.php';
-// config.php is included by header.php, which brings in COMPANY_NAME etc.
 
 $page_title = "View Invoice";
 $invoice_id = isset($_GET['id']) ? sanitize_int($_GET['id']) : null;
 
 if (!$invoice_id) {
-    $_SESSION['message'] = "No invoice ID provided or invalid ID.";
-    // It might be better to redirect to index.php with an error message
-    // For now, showing error on this page.
-    // header("Location: index.php");
-    // exit;
     $error_message = "No invoice ID specified or the ID is invalid. Please go back to the <a href='index.php'>invoice list</a>.";
 } else {
     $conn = db_connect();
@@ -26,10 +20,10 @@ if (!$invoice_id) {
     if ($invoice_result && mysqli_num_rows($invoice_result) > 0) {
         $invoice = db_fetch_assoc($invoice_result);
 
-        // Fetch invoice items
-        $sql_items = "SELECT ii.*, p.name as package_name
+        // Fetch invoice items, joining with services table now
+        $sql_items = "SELECT ii.*, s.name as service_name
                       FROM invoice_items ii
-                      LEFT JOIN packages p ON ii.package_id = p.id
+                      LEFT JOIN services s ON ii.service_id = s.id
                       WHERE ii.invoice_id = $invoice_id
                       ORDER BY ii.id ASC";
         $items_result = db_query($sql_items);
@@ -37,12 +31,9 @@ if (!$invoice_id) {
 
     } else {
         $error_message = "Invoice not found with ID: " . htmlspecialchars($invoice_id) . ". Go back to <a href='index.php'>invoice list</a>.";
-        // If invoice not found, no need to proceed further.
     }
-    // db_close();
 }
 
-// The actual page title should be dynamic if invoice is found
 if (isset($invoice) && $invoice) {
     $page_title = "Invoice " . htmlspecialchars($invoice['invoice_number']);
 }
@@ -67,64 +58,26 @@ include 'templates/header.php';
         width: 100%;
         line-height: inherit;
         text-align: left;
-        border-collapse: collapse; /* Ensure borders are clean */
+        border-collapse: collapse;
     }
-    .invoice-box table td {
-        padding: 5px;
-        vertical-align: top;
-    }
-    .invoice-box table tr td:nth-child(n+2) { /* For columns after the first, if specific alignment needed */
-        /* text-align: right; */
-    }
-    .invoice-box table tr.top table td {
-        padding-bottom: 20px;
-    }
-    .invoice-box table tr.top table td.title {
-        font-size: 45px;
-        line-height: 45px;
-        color: #333;
-    }
-    .invoice-box table tr.information table td {
-        padding-bottom: 40px;
-    }
-    .invoice-box table tr.heading td {
-        background: #eee;
-        border-bottom: 1px solid #ddd;
-        font-weight: bold;
-    }
-    .invoice-box table tr.details td {
-        padding-bottom: 20px;
-    }
-    .invoice-box table tr.item td {
-        border-bottom: 1px solid #eee;
-    }
-    .invoice-box table tr.item.last td {
-        border-bottom: none;
-    }
-    .invoice-box table tr.total td:nth-child(2) {
-        border-top: 2px solid #eee;
-        font-weight: bold;
-    }
+    .invoice-box table td { padding: 5px; vertical-align: top; }
+    .invoice-box table tr.top table td { padding-bottom: 20px; }
+    .invoice-box table tr.top table td.title { font-size: 45px; line-height: 45px; color: #333; }
+    .invoice-box table tr.information table td { padding-bottom: 40px; }
+    .invoice-box table tr.heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; }
+    .invoice-box table tr.item td { border-bottom: 1px solid #eee; }
+    .invoice-box table tr.item.last td { border-bottom: none; }
+    .invoice-box table tr.total td:nth-child(2) { border-top: 2px solid #eee; font-weight: bold; }
     .text-right { text-align: right !important; }
     .company-details address { white-space: pre-line; }
     .notes-terms { margin-top: 30px; font-size: 0.9em; }
     .notes-terms h5 { margin-bottom: 5px; }
+    .payment-form-container { max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; background-color: #f9f9f9; border-radius: 8px; }
 
     @media print {
-        body, .invoice-box {
-            border: 0;
-            margin: 0;
-            padding: 0;
-            box-shadow: none;
-        }
-        .container { /* Override container width for print */
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        nav, footer, .btn, .actions, .alert { /* Hide non-essential elements */
-            display: none !important;
-        }
+        body, .invoice-box { border: 0; margin: 0; padding: 0; box-shadow: none; }
+        .container { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        nav, footer, .btn, .actions, .alert, .payment-form-container { display: none !important; }
         .content { padding: 0 !important; }
     }
 </style>
@@ -137,10 +90,10 @@ include 'templates/header.php';
 
 <?php if (isset($error_message)): ?>
     <div class="alert alert-danger">
-        <?php echo $error_message; // Already HTML formatted or safe ?>
+        <?php echo $error_message; ?>
     </div>
 <?php elseif (isset($invoice) && $invoice): ?>
-    <div class="actions" style="margin-bottom: 20px;">
+    <div class="actions" style="margin-bottom: 20px; max-width: 800px; margin: auto; padding: 0 0 20px 0;">
         <a href="index.php" class="btn btn-info">Back to List</a>
         <a href="edit_invoice.php?id=<?php echo $invoice['id']; ?>" class="btn" style="background-color:#f0ad4e; color:white;">Edit Invoice</a>
         <button onclick="window.print();" class="btn">Print Invoice</button>
@@ -184,7 +137,6 @@ include 'templates/header.php';
                                 <?php endif; ?>
                                 </address>
                             </td>
-
                             <td class="text-right">
                                 <strong>Bill To:</strong><br>
                                 <?php echo htmlspecialchars($invoice['client_name']); ?><br>
@@ -209,8 +161,8 @@ include 'templates/header.php';
                 <tr class="item">
                     <td>
                         <?php echo htmlspecialchars($item['item_description']); ?>
-                        <?php if($item['package_id'] && $item['package_name'] && $item['item_description'] !== $item['package_name']): ?>
-                            <small style="display:block; color:#777;">(Package: <?php echo htmlspecialchars($item['package_name']); ?>)</small>
+                        <?php if($item['service_id'] && $item['service_name'] && $item['item_description'] !== $item['service_name']): ?>
+                            <small style="display:block; color:#777;">(Service: <?php echo htmlspecialchars($item['service_name']); ?>)</small>
                         <?php endif; ?>
                     </td>
                     <td class="text-right"><?php echo htmlspecialchars($item['quantity']); ?></td>
@@ -224,13 +176,13 @@ include 'templates/header.php';
                 <td colspan="3" class="text-right">Subtotal:</td>
                 <td class="text-right"><?php echo number_format($invoice['sub_total'], 2); ?></td>
             </tr>
-            <?php if (isset($invoice['tax_amount']) && $invoice['tax_amount'] > 0): ?>
+            <?php if (isset($invoice['tax_amount']) && (float)$invoice['tax_amount'] > 0): ?>
             <tr class="total">
                 <td colspan="3" class="text-right">Tax (<?php echo number_format($invoice['tax_percentage'], 2); ?>%):</td>
                 <td class="text-right"><?php echo number_format($invoice['tax_amount'], 2); ?></td>
             </tr>
             <?php endif; ?>
-            <?php if (isset($invoice['discount_amount']) && $invoice['discount_amount'] > 0): ?>
+            <?php if (isset($invoice['discount_amount']) && (float)$invoice['discount_amount'] > 0): ?>
             <tr class="total">
                 <td colspan="3" class="text-right">Discount:</td>
                 <td class="text-right">-<?php echo number_format($invoice['discount_amount'], 2); ?></td>
@@ -251,22 +203,34 @@ include 'templates/header.php';
         </table>
 
         <div class="notes-terms">
-            <?php if (!empty($invoice['payment_terms'])): ?>
-                <h5>Payment Terms:</h5>
-                <p><?php echo nl2br(htmlspecialchars($invoice['payment_terms'])); ?></p>
-            <?php endif; ?>
-            <?php if (!empty($invoice['notes'])): ?>
-                <h5>Notes:</h5>
-                <p><?php echo nl2br(htmlspecialchars($invoice['notes'])); ?></p>
-            <?php endif; ?>
+            <?php if (!empty($invoice['payment_terms'])): ?><h5>Payment Terms:</h5><p><?php echo nl2br(htmlspecialchars($invoice['payment_terms'])); ?></p><?php endif; ?>
+            <?php if (!empty($invoice['notes'])): ?><h5>Notes:</h5><p><?php echo nl2br(htmlspecialchars($invoice['notes'])); ?></p><?php endif; ?>
         </div>
          <div style="margin-top:30px; text-align:center; font-size:0.8em; color: #777;">
             Invoice Status: <?php echo htmlspecialchars($invoice['status']); ?>
         </div>
     </div>
 
+    <?php if ($invoice['balance_due'] > 0.001): ?>
+    <div class="payment-form-container">
+        <h3>Record a Payment</h3>
+        <form action="record_payment.php" method="post">
+            <input type="hidden" name="invoice_id" value="<?php echo $invoice['id']; ?>">
+            <div class="form-group">
+                <label for="payment_amount">Payment Amount:</label>
+                <input type="text" name="payment_amount" id="payment_amount" value="<?php echo number_format($invoice['balance_due'], 2, '.', ''); ?>" required pattern="^\d+(\.\d{1,2})?$" title="Enter a valid payment amount.">
+            </div>
+            <div class="form-group">
+                <label for="payment_date">Payment Date:</label>
+                <input type="date" name="payment_date" id="payment_date" value="<?php echo date('Y-m-d'); ?>" required>
+            </div>
+            <button type="submit" class="btn">Record Payment</button>
+        </form>
+    </div>
+    <?php endif; ?>
+
 <?php else: ?>
-    <?php if(!isset($error_message)): // Only show this if no other error message was set ?>
+    <?php if(!isset($error_message)): ?>
     <p>Could not load invoice data. Please ensure a valid invoice ID is provided.</p>
     <?php endif; ?>
 <?php endif; ?>

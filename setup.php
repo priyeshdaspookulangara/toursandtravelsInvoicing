@@ -75,10 +75,9 @@ $hashed_password = password_hash($admin_password, PASSWORD_DEFAULT);
 
 $s_admin_username = sanitize_string($admin_username);
 $s_admin_email = sanitize_string($admin_email);
-$s_hashed_password = sanitize_string($hashed_password);
 
 // The table is new, so no need to check if user exists.
-$sql_insert_admin = "INSERT INTO `users` (`username`, `password`, `email`) VALUES ('$s_admin_username', '$s_hashed_password', '$s_admin_email')";
+$sql_insert_admin = "INSERT INTO `users` (`username`, `password`, `email`) VALUES ('$s_admin_username', '$hashed_password', '$s_admin_email')";
 if (db_query($sql_insert_admin)) {
     echo "Admin user '$admin_username' created successfully.<br>";
     echo "Login with Username: $admin_username, Password: $admin_password <br>";

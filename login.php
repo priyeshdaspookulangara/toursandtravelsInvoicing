@@ -96,11 +96,17 @@ include 'templates/header.php';
     <button type="submit" class="btn">Login</button>
 </form>
 
-<p style="margin-top: 20px;">
-    Default credentials (if you ran setup.php):<br>
-    Username: <strong>admin</strong><br>
-    Password: <strong>password123</strong>
-</p>
+<div class="mt-4 p-3 bg-light border rounded">
+    <h6 class="mb-3">Default Credentials (after setup)</h6>
+    <div class="row">
+        <div class="col-4"><strong>Username:</strong></div>
+        <div class="col-8">admin</div>
+    </div>
+    <div class="row">
+        <div class="col-4"><strong>Password:</strong></div>
+        <div class="col-8">password123</div>
+    </div>
+</div>
 
 <?php
 include 'templates/footer.php';

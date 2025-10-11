@@ -40,36 +40,21 @@ include 'templates/header.php';
 <!-- Dashboard Charts Row -->
 <div class="row mb-4">
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-chart-line"></i> Monthly Revenue (Last 6 Months)
-            </div>
-            <div class="card-body">
-                <canvas id="monthlyRevenueChart"></canvas>
-            </div>
-        </div>
+        <h5><i class="fas fa-chart-line"></i> Monthly Revenue (Last 6 Months)</h5>
+        <canvas id="monthlyRevenueChart"></canvas>
     </div>
     <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-chart-pie"></i> Invoice Status
-            </div>
-            <div class="card-body">
-                <canvas id="invoiceStatusChart"></canvas>
-            </div>
-        </div>
+        <h5><i class="fas fa-chart-pie"></i> Invoice Status</h5>
+        <canvas id="invoiceStatusChart"></canvas>
     </div>
 </div>
 
 
 <!-- Invoices Table -->
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-file-invoice"></i> All Invoices
-    </div>
-    <div class="card-body">
-        <?php if (isset($page_error)): ?>
-            <div class="alert alert-danger">
+<h5 class="mt-4"><i class="fas fa-file-invoice"></i> All Invoices</h5>
+<div class="table-responsive">
+    <?php if (isset($page_error)): ?>
+        <div class="alert alert-danger">
                 <?php echo htmlspecialchars($page_error); ?>
             </div>
         <?php endif; ?>

@@ -1,20 +1,27 @@
-</div> <!-- end .content -->
-</div> <!-- end .container -->
+<?php if (isset($_SESSION['user_id'])): ?>
+        </main> <!-- end main .container-fluid -->
+    </div> <!-- end #content -->
+</div> <!-- end .d-flex wrapper -->
+<?php else: ?>
+        </main> <!-- end main .login-box -->
+    </div> <!-- end .login-container -->
+<?php endif; ?>
 
-<footer>
-    <p>&copy; <?php echo date('Y'); ?> <?php echo COMPANY_NAME; ?>. All rights reserved.</p>
-    <p>Powered by PlainPHP InvoiceGen</p>
-</footer>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+<!-- Bootstrap 5 JS Bundle (includes Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<!-- Chart.js for dashboard charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<!-- Custom App JS -->
+<script src="<?php echo APP_BASE_URL; ?>assets/js/main.js"></script>
 
 </body>
 </html>
 <?php
-// Close database connection if it was opened
-if (function_exists('db_close')) {
-    // db_close(); // Decided to close it explicitly in scripts or rely on PHP's auto-close for short scripts.
-                 // For longer running scripts or daemons, explicit close is better.
-                 // For typical web requests, PHP auto-closes, but explicit is good practice.
-                 // Let's comment this out from footer for now to avoid issues if db.php isn't included on some simple pages
-                 // that might only use config.
-}
+// Rely on PHP's auto-close for DB connection on these short-lived web request scripts.
 ?>

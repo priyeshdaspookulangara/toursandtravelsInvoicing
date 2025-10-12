@@ -28,6 +28,7 @@ $accounts = [
     ['id' => 30, 'account_name' => 'Sales Revenue', 'account_type' => 'Revenue', 'description' => 'Revenue from primary business activities (tours, tickets, etc.).'],
     ['id' => 31, 'account_name' => 'Service Fees', 'account_type' => 'Revenue', 'description' => 'Revenue from other services like visa processing.'],
     ['id' => 32, 'account_name' => 'Sales Revenue - Air Tickets', 'account_type' => 'Revenue', 'description' => 'Revenue from selling air tickets.'],
+    ['id' => 33, 'account_name' => 'Sales Revenue - DTP Services', 'account_type' => 'Revenue', 'description' => 'Revenue from Desktop Publishing services.'],
 
     // Expenses
     ['id' => 40, 'account_name' => 'Salaries and Wages', 'account_type' => 'Expense', 'description' => 'Employee salaries and wages.'],

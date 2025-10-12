@@ -127,6 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $total_cost_of_sales = 0;
             $has_tickets = false;
+            $has_dtp = false;
 
             // 2. Insert invoice items and handle ticket-specific logic
             foreach ($invoice_items_data as $item) {
@@ -150,11 +151,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         throw new Exception("Failed to create vendor bill: " . mysqli_stmt_error($stmt_bill));
                     }
                 }
+                // Check if the service is DTP
+                if (strpos(strtolower($item['description']), 'dtp') !== false) {
+                    $has_dtp = true;
+                }
             }
 
             // 3. Create journal entries
             // Sales-side entries
-            $sales_revenue_account = $has_tickets ? ACCOUNT_ID_SALES_REVENUE_TICKETS : ACCOUNT_ID_SALES_REVENUE;
+            if ($has_tickets) {
+                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_TICKETS;
+            } elseif ($has_dtp) {
+                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_DTP;
+            } else {
+                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE;
+            }
+
             $sales_entries = [
                 ['account_id' => ACCOUNT_ID_ACCOUNTS_RECEIVABLE, 'debit' => $grand_total, 'credit' => 0],
                 ['account_id' => $sales_revenue_account, 'debit' => 0, 'credit' => $sub_total],
@@ -261,7 +273,11 @@ include 'templates/header.php';
                         <select name="item_service_id[]" class="service-select" data-row-id="<?php echo $i; ?>">
                             <option value="">Custom Item</option>
                             <?php foreach ($services as $service): ?>
-                                <option value="<?php echo $service['id']; ?>" data-price="<?php echo $service['price']; ?>" data-description="<?php echo htmlspecialchars($service['name']); ?>" data-is-ticket="<?php echo (strpos(strtolower($service['name']), 'ticket') !== false) ? 'true' : 'false'; ?>">
+                                <option value="<?php echo $service['id']; ?>"
+                                        data-price="<?php echo $service['price']; ?>"
+                                        data-description="<?php echo htmlspecialchars($service['name']); ?>"
+                                        data-is-ticket="<?php echo (strpos(strtolower($service['name']), 'ticket') !== false) ? 'true' : 'false'; ?>"
+                                        data-is-dtp="<?php echo (strpos(strtolower($service['name']), 'dtp') !== false) ? 'true' : 'false'; ?>">
                                     <?php echo htmlspecialchars($service['name']); ?>
                                 </option>
                             <?php endforeach; ?>

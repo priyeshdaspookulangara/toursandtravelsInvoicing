@@ -23,8 +23,16 @@ define('VAT_RATE', 5.00); // VAT Rate in percentage (e.g., 5.00 for 5%)
 // It's a good practice to define them here to avoid hardcoding IDs in the business logic.
 define('ACCOUNT_ID_CASH', 1);
 define('ACCOUNT_ID_ACCOUNTS_RECEIVABLE', 2);
+define('ACCOUNT_ID_INPUT_VAT', 4);
+define('ACCOUNT_ID_ACCOUNTS_PAYABLE', 10);
 define('ACCOUNT_ID_SALES_REVENUE', 30); // Corrected from 10
 define('ACCOUNT_ID_VAT_PAYABLE', 11);
+define('ACCOUNT_ID_SALES_REVENUE_TICKETS', 32);
+define('ACCOUNT_ID_SALES_REVENUE_DTP', 33);
+define('ACCOUNT_ID_COST_OF_SALES_TICKETS', 47);
+define('ACCOUNT_ID_ACCUMULATED_DEPRECIATION', 5);
+define('ACCOUNT_ID_DEPRECIATION_EXPENSE', 46);
+
 
 // Error reporting - Force display for debugging
 ini_set('display_errors', 1);

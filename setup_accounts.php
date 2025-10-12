@@ -13,6 +13,8 @@ $accounts = [
     ['id' => 1, 'account_name' => 'Cash and Bank', 'account_type' => 'Asset', 'description' => 'Cash on hand and in bank accounts.'],
     ['id' => 2, 'account_name' => 'Accounts Receivable', 'account_type' => 'Asset', 'description' => 'Money owed to the company by its clients.'],
     ['id' => 3, 'account_name' => 'Prepaid Expenses', 'account_type' => 'Asset', 'description' => 'Expenses paid in advance.'],
+    ['id' => 4, 'account_name' => 'Input VAT Recoverable', 'account_type' => 'Asset', 'description' => 'VAT paid on expenses, which can be reclaimed.'],
+    ['id' => 5, 'account_name' => 'Accumulated Depreciation', 'account_type' => 'Asset', 'description' => 'Total depreciation of fixed assets. (Contra-Asset)'],
 
     // Liabilities
     ['id' => 10, 'account_name' => 'Accounts Payable', 'account_type' => 'Liability', 'description' => 'Money the company owes to its suppliers.'],
@@ -25,6 +27,8 @@ $accounts = [
     // Revenue
     ['id' => 30, 'account_name' => 'Sales Revenue', 'account_type' => 'Revenue', 'description' => 'Revenue from primary business activities (tours, tickets, etc.).'],
     ['id' => 31, 'account_name' => 'Service Fees', 'account_type' => 'Revenue', 'description' => 'Revenue from other services like visa processing.'],
+    ['id' => 32, 'account_name' => 'Sales Revenue - Air Tickets', 'account_type' => 'Revenue', 'description' => 'Revenue from selling air tickets.'],
+    ['id' => 33, 'account_name' => 'Sales Revenue - DTP Services', 'account_type' => 'Revenue', 'description' => 'Revenue from Desktop Publishing services.'],
 
     // Expenses
     ['id' => 40, 'account_name' => 'Salaries and Wages', 'account_type' => 'Expense', 'description' => 'Employee salaries and wages.'],
@@ -33,6 +37,8 @@ $accounts = [
     ['id' => 43, 'account_name' => 'Office Supplies', 'account_type' => 'Expense', 'description' => 'Cost of office supplies.'],
     ['id' => 44, 'account_name' => 'Travel Expense', 'account_type' => 'Expense', 'description' => 'Costs associated with business travel.'],
     ['id' => 45, 'account_name' => 'Bank Service Charges', 'account_type' => 'Expense', 'description' => 'Fees charged by the bank.'],
+    ['id' => 46, 'account_name' => 'Depreciation Expense', 'account_type' => 'Expense', 'description' => 'Allocation of the cost of fixed assets over their useful life.'],
+    ['id' => 47, 'account_name' => 'Cost of Sales - Air Tickets', 'account_type' => 'Expense', 'description' => 'The direct cost of purchasing air tickets for resale.'],
 ];
 
 echo "<h3>Setting up Chart of Accounts...</h3>";

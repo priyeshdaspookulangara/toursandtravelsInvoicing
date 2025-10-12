@@ -7,7 +7,7 @@ echo "Seeding database with test data...\n";
 $conn = db_connect();
 
 // --- 1. Truncate tables for a clean slate ---
-$tables_to_truncate = ['general_ledger', 'expenses', 'invoice_items', 'invoices', 'services', 'clients'];
+$tables_to_truncate = ['general_ledger', 'expenses', 'invoice_items', 'invoices', 'vendor_bills', 'vendors', 'services', 'clients'];
 foreach ($tables_to_truncate as $table) {
     if (db_query("DELETE FROM $table")) {
         echo "Cleared table: $table\n";
@@ -32,6 +32,23 @@ $service_sql = "INSERT INTO services (name, description, price) VALUES ('Web Dev
 db_query($service_sql);
 $service_id = db_insert_id();
 echo "Created service with ID: $service_id\n";
+
+$ticket_service_sql = "INSERT INTO services (name, description, price) VALUES ('Air Ticket Booking', 'Booking of air tickets', 100.00)"; // Price here is a service fee
+db_query($ticket_service_sql);
+$ticket_service_id = db_insert_id();
+echo "Created ticket service with ID: $ticket_service_id\n";
+
+$dtp_service_sql = "INSERT INTO services (name, description, price) VALUES ('DTP Service', 'Desktop Publishing services', 50.00)";
+db_query($dtp_service_sql);
+$dtp_service_id = db_insert_id();
+echo "Created DTP service with ID: $dtp_service_id\n";
+
+// Airlines (as Vendors)
+db_query("INSERT INTO vendors (name) VALUES ('Emirates')");
+db_query("INSERT INTO vendors (name) VALUES ('Etihad Airways')");
+db_query("INSERT INTO vendors (name) VALUES ('Qatar Airways')");
+echo "Created airline vendors.\n";
+
 
 // --- 3. Create a "Paid" Invoice ---
 $paid_invoice_date = date('Y-m-d', strtotime('-1 month'));

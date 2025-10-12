@@ -34,6 +34,13 @@ function get_breadcrumbs() {
                  $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_clients.php">Manage Clients</a></li>';
                  $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Client</li>';
                 break;
+            case 'list_vendors.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Vendors</li>';
+                break;
+            case 'add_vendor.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_vendors.php">Manage Vendors</a></li>';
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Vendor</li>';
+                break;
             case 'list_services.php':
                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Services</li>';
                 break;
@@ -48,11 +55,30 @@ function get_breadcrumbs() {
                 $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_expenses.php">Manage Expenses</a></li>';
                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Expense</li>';
                 break;
+            case 'list_fixed_assets.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Fixed Asset Register</li>';
+                break;
+            case 'add_fixed_asset.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_fixed_assets.php">Fixed Asset Register</a></li>';
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Fixed Asset</li>';
+                break;
+            case 'bank_reconciliation.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Bank Reconciliation</li>';
+                break;
             case 'report_profit_loss.php':
                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Profit & Loss Report</li>';
                 break;
             case 'report_vat.php':
                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">VAT Report</li>';
+                break;
+            case 'report_trial_balance.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Trial Balance Report</li>';
+                break;
+            case 'report_balance_sheet.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Balance Sheet Report</li>';
+                break;
+            case 'report_ap_aging.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">A/P Aging Report</li>';
                 break;
         }
     }
@@ -85,11 +111,23 @@ function get_breadcrumbs() {
                 <li><a href="<?php echo APP_BASE_URL; ?>index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>create_invoice.php"><i class="fas fa-plus"></i> Create Invoice</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>list_clients.php"><i class="fas fa-users"></i> Manage Clients</a></li>
+                <li><a href="<?php echo APP_BASE_URL; ?>list_vendors.php"><i class="fas fa-store"></i> Manage Vendors</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>list_services.php"><i class="fas fa-concierge-bell"></i> Manage Services</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>list_expenses.php"><i class="fas fa-money-bill-wave"></i> Manage Expenses</a></li>
+                <li><a href="<?php echo APP_BASE_URL; ?>list_fixed_assets.php"><i class="fas fa-building"></i> Fixed Asset Register</a></li>
+                <li>
+                    <a href="#accountingSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fas fa-calculator"></i> Accounting</a>
+                    <ul class="collapse list-unstyled" id="accountingSubmenu">
+                        <li><a href="<?php echo APP_BASE_URL; ?>list_vendor_bills.php">Vendor Bills</a></li>
+                        <li><a href="<?php echo APP_BASE_URL; ?>bank_reconciliation.php">Bank Reconciliation</a></li>
+                    </ul>
+                </li>
                 <li>
                     <a href="#reportsSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fas fa-chart-pie"></i> Reports</a>
                     <ul class="collapse list-unstyled" id="reportsSubmenu">
+                        <li><a href="<?php echo APP_BASE_URL; ?>report_ap_aging.php">A/P Aging</a></li>
+                        <li><a href="<?php echo APP_BASE_URL; ?>report_balance_sheet.php">Balance Sheet</a></li>
+                        <li><a href="<?php echo APP_BASE_URL; ?>report_trial_balance.php">Trial Balance</a></li>
                         <li><a href="<?php echo APP_BASE_URL; ?>report_profit_loss.php">Profit & Loss</a></li>
                         <li><a href="<?php echo APP_BASE_URL; ?>report_vat.php">VAT Report</a></li>
                     </ul>

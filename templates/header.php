@@ -5,11 +5,12 @@ if (session_status() == PHP_SESSION_NONE) {
 require_once __DIR__ . '/../config.php';
 
 // Define a function to generate breadcrumbs
-function get_breadcrumbs() {
-    $path = basename($_SERVER['SCRIPT_NAME']);
-    $breadcrumbs = [];
+if (!function_exists('get_breadcrumbs')) {
+    function get_breadcrumbs() {
+        $path = basename($_SERVER['SCRIPT_NAME']);
+        $breadcrumbs = [];
 
-    if ($path == 'index.php' || $path == '') {
+        if ($path == 'index.php' || $path == '') {
         $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Dashboard</li>';
     } else {
         $breadcrumbs[] = '<li class="breadcrumb-item"><a href="' . APP_BASE_URL . 'index.php">Dashboard</a></li>';

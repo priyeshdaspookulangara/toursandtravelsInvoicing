@@ -21,11 +21,19 @@ if ($expenses_result) {
 include 'templates/header.php';
 ?>
 
-<h2><?php echo $page_title; ?></h2>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><?php echo htmlspecialchars($page_title); ?></h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="add_expense.php" class="btn btn-sm btn-success">
+            <i class="fas fa-plus"></i> Add New Expense
+        </a>
+    </div>
+</div>
 
 <?php if (isset($_SESSION['message'])): ?>
-    <div class="alert alert-success">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?php echo htmlspecialchars($_SESSION['message']); unset($_SESSION['message']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
 
@@ -35,36 +43,35 @@ include 'templates/header.php';
     </div>
 <?php endif; ?>
 
-<p><a href="add_expense.php" class="btn">Add New Expense</a></p>
-
 <?php if (!empty($expenses)): ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Vendor</th>
-                <th class="text-right">Amount</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($expenses as $expense): ?>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
                 <tr>
-                    <td><?php echo htmlspecialchars(date("Y-m-d", strtotime($expense['expense_date']))); ?></td>
-                    <td><?php echo htmlspecialchars($expense['category_name']); ?></td>
-                    <td><?php echo nl2br(htmlspecialchars($expense['description'])); ?></td>
-                    <td><?php echo htmlspecialchars($expense['vendor']); ?></td>
-                    <td class="text-right"><?php echo number_format($expense['amount'], 2); ?></td>
-                    <td class="actions">
-                        <!-- Edit/Delete functionality for expenses can be added here in the future -->
-                        <span>N/A</span>
-                    </td>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Vendor</th>
+                    <th class="text-end">Amount</th>
+                    <th>Actions</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($expenses as $expense): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars(date("Y-m-d", strtotime($expense['expense_date']))); ?></td>
+                        <td><?php echo htmlspecialchars($expense['category_name']); ?></td>
+                        <td><?php echo nl2br(htmlspecialchars($expense['description'])); ?></td>
+                        <td><?php echo htmlspecialchars($expense['vendor']); ?></td>
+                        <td class="text-end"><?php echo number_format($expense['amount'], 2); ?></td>
+                        <td class="actions">
+                            <span class="badge bg-secondary">N/A</span>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 <?php elseif (empty($page_error)): ?>
     <p>No expenses found. <a href="add_expense.php">Add one now!</a></p>
 <?php endif; ?>

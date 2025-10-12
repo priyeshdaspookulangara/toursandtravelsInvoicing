@@ -34,36 +34,42 @@ include 'templates/header.php';
     </div>
 <?php endif; ?>
 
-<p><a href="add_client.php" class="btn">Add New Client</a></p>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><?php echo htmlspecialchars($page_title); ?></h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="add_client.php" class="btn btn-sm btn-success">
+            <i class="fas fa-plus"></i> Add New Client
+        </a>
+    </div>
+</div>
 
 <?php if (!empty($clients)): ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($clients as $client): ?>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
                 <tr>
-                    <td><?php echo htmlspecialchars($client['name']); ?></td>
-                    <td><?php echo htmlspecialchars($client['email']); ?></td>
-                    <td><?php echo htmlspecialchars($client['phone']); ?></td>
-                    <td><?php echo nl2br(htmlspecialchars($client['address'])); ?></td>
-                    <td class="actions">
-                        <!-- Basic edit/delete links - functionality to be built -->
-                        <!-- <a href="edit_client.php?id=<?php echo $client['id']; ?>" class="btn btn-sm" style="background-color: #f0ad4e; color:white;">Edit</a> -->
-                        <!-- <a href="delete_client.php?id=<?php echo $client['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this client? This might affect existing invoices.');">Delete</a> -->
-                        <span>Edit/Delete (To be implemented)</span>
-                    </td>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Actions</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($clients as $client): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($client['name']); ?></td>
+                        <td><?php echo htmlspecialchars($client['email']); ?></td>
+                        <td><?php echo htmlspecialchars($client['phone']); ?></td>
+                        <td><?php echo nl2br(htmlspecialchars($client['address'])); ?></td>
+                        <td class="actions">
+                            <span class="badge bg-secondary">N/A</span>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 <?php elseif (empty($page_error)): ?>
     <p>No clients found. <a href="add_client.php">Add one now!</a></p>
 <?php endif; ?>

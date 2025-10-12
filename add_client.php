@@ -66,10 +66,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 include 'templates/header.php';
 ?>
 
-<h2><?php echo $page_title; ?></h2>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><?php echo htmlspecialchars($page_title); ?></h1>
+</div>
 
 <?php if (!empty($errors)): ?>
     <div class="alert alert-danger">
+        <h4 class="alert-heading">Please correct the following errors:</h4>
         <ul>
             <?php foreach ($errors as $error): ?>
                 <li><?php echo htmlspecialchars($error); ?></li>
@@ -78,27 +81,41 @@ include 'templates/header.php';
     </div>
 <?php endif; ?>
 
-<form action="add_client.php" method="post">
-    <div class="form-group">
-        <label for="client_name">Client Name:</label>
-        <input type="text" name="client_name" id="client_name" value="<?php echo isset($_POST['client_name']) ? htmlspecialchars($_POST['client_name']) : ''; ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="client_email">Email:</label>
-        <input type="email" name="client_email" id="client_email" value="<?php echo isset($_POST['client_email']) ? htmlspecialchars($_POST['client_email']) : ''; ?>">
-    </div>
-    <div class="form-group">
-        <label for="client_phone">Phone:</label>
-        <input type="text" name="client_phone" id="client_phone" value="<?php echo isset($_POST['client_phone']) ? htmlspecialchars($_POST['client_phone']) : ''; ?>">
-    </div>
-    <div class="form-group">
-        <label for="client_address">Address:</label>
-        <textarea name="client_address" id="client_address"><?php echo isset($_POST['client_address']) ? htmlspecialchars($_POST['client_address']) : ''; ?></textarea>
-    </div>
+<div class="card">
+    <div class="card-body">
+        <form action="add_client.php" method="post">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="client_name" class="form-label">Client Name:</label>
+                        <input type="text" class="form-control" name="client_name" id="client_name" value="<?php echo isset($_POST['client_name']) ? htmlspecialchars($_POST['client_name']) : ''; ?>" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="client_email" class="form-label">Email:</label>
+                        <input type="email" class="form-control" name="client_email" id="client_email" value="<?php echo isset($_POST['client_email']) ? htmlspecialchars($_POST['client_email']) : ''; ?>">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="client_phone" class="form-label">Phone:</label>
+                        <input type="text" class="form-control" name="client_phone" id="client_phone" value="<?php echo isset($_POST['client_phone']) ? htmlspecialchars($_POST['client_phone']) : ''; ?>">
+                    </div>
+                </div>
+            </div>
+             <div class="mb-3">
+                <label for="client_address" class="form-label">Address:</label>
+                <textarea class="form-control" name="client_address" id="client_address" rows="3"><?php echo isset($_POST['client_address']) ? htmlspecialchars($_POST['client_address']) : ''; ?></textarea>
+            </div>
 
-    <button type="submit" class="btn">Add Client</button>
-    <a href="list_clients.php" class="btn" style="background-color: #777;">Cancel</a>
-</form>
+            <button type="submit" class="btn btn-primary">Add Client</button>
+            <a href="list_clients.php" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
 
 <?php
 include 'templates/footer.php';

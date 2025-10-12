@@ -82,11 +82,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 include 'templates/header.php';
 ?>
 
-<h2><?php echo $page_title; ?></h2>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><?php echo htmlspecialchars($page_title); ?></h1>
+</div>
 
 <?php if (!empty($errors)): ?>
     <div class="alert alert-danger">
-        <strong>Please correct the following errors:</strong>
+        <h4 class="alert-heading">Please correct the following errors:</h4>
         <ul>
             <?php foreach ($errors as $error): ?>
                 <li><?php echo htmlspecialchars($error); ?></li>
@@ -95,37 +97,56 @@ include 'templates/header.php';
     </div>
 <?php endif; ?>
 
-<form action="add_expense.php" method="post">
-    <div class="form-group">
-        <label for="expense_date">Expense Date:</label>
-        <input type="date" name="expense_date" id="expense_date" value="<?php echo isset($_POST['expense_date']) ? htmlspecialchars($_POST['expense_date']) : date('Y-m-d'); ?>" required>
+<div class="card">
+    <div class="card-body">
+        <form action="add_expense.php" method="post">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="expense_date" class="form-label">Expense Date:</label>
+                        <input type="date" class="form-control" name="expense_date" id="expense_date" value="<?php echo isset($_POST['expense_date']) ? htmlspecialchars($_POST['expense_date']) : date('Y-m-d'); ?>" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount:</label>
+                        <input type="text" class="form-control" name="amount" id="amount" value="<?php echo isset($_POST['amount']) ? htmlspecialchars($_POST['amount']) : ''; ?>" required pattern="^\d+(\.\d{1,2})?$" title="Enter a valid amount, e.g., 150.50">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">Expense Category:</label>
+                        <select class="form-select" name="category_id" id="category_id" required>
+                            <option value="">Select a Category</option>
+                            <?php foreach ($expense_categories as $category): ?>
+                                <option value="<?php echo $category['id']; ?>" <?php echo (isset($_POST['category_id']) && $_POST['category_id'] == $category['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($category['account_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="vendor" class="form-label">Vendor/Supplier (Optional):</label>
+                        <input type="text" class="form-control" name="vendor" id="vendor" value="<?php echo isset($_POST['vendor']) ? htmlspecialchars($_POST['vendor']) : ''; ?>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description:</label>
+                <textarea class="form-control" name="description" id="description" required rows="3"><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : ''; ?></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Record Expense</button>
+            <a href="list_expenses.php" class="btn btn-secondary">Cancel</a>
+        </form>
     </div>
-    <div class="form-group">
-        <label for="category_id">Expense Category:</label>
-        <select name="category_id" id="category_id" required>
-            <option value="">Select a Category</option>
-            <?php foreach ($expense_categories as $category): ?>
-                <option value="<?php echo $category['id']; ?>" <?php echo (isset($_POST['category_id']) && $_POST['category_id'] == $category['id']) ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($category['account_name']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="amount">Amount:</label>
-        <input type="text" name="amount" id="amount" value="<?php echo isset($_POST['amount']) ? htmlspecialchars($_POST['amount']) : ''; ?>" required pattern="^\d+(\.\d{1,2})?$" title="Enter a valid amount, e.g., 150.50">
-    </div>
-    <div class="form-group">
-        <label for="vendor">Vendor/Supplier (Optional):</label>
-        <input type="text" name="vendor" id="vendor" value="<?php echo isset($_POST['vendor']) ? htmlspecialchars($_POST['vendor']) : ''; ?>">
-    </div>
-    <div class="form-group">
-        <label for="description">Description:</label>
-        <textarea name="description" id="description" required><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : ''; ?></textarea>
-    </div>
-    <button type="submit" class="btn">Record Expense</button>
-    <a href="list_expenses.php" class="btn" style="background-color: #777;">Cancel</a>
-</form>
+</div>
 
 <?php
 include 'templates/footer.php';

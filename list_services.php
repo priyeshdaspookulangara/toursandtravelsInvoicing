@@ -19,11 +19,19 @@ if ($services_result) {
 include 'templates/header.php';
 ?>
 
-<h2><?php echo $page_title; ?></h2>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><?php echo htmlspecialchars($page_title); ?></h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="add_service.php" class="btn btn-sm btn-success">
+            <i class="fas fa-plus"></i> Add New Service
+        </a>
+    </div>
+</div>
 
 <?php if (isset($_SESSION['message'])): ?>
-    <div class="alert alert-success">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?php echo htmlspecialchars($_SESSION['message']); unset($_SESSION['message']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
 
@@ -33,34 +41,31 @@ include 'templates/header.php';
     </div>
 <?php endif; ?>
 
-<p><a href="add_service.php" class="btn">Add New Service</a></p>
-
 <?php if (!empty($services)): ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th class="text-right">Price</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($services as $service): ?>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
                 <tr>
-                    <td><?php echo htmlspecialchars($service['name']); ?></td>
-                    <td><?php echo nl2br(htmlspecialchars($service['description'])); ?></td>
-                    <td class="text-right"><?php echo number_format($service['price'], 2); ?></td>
-                    <td class="actions">
-                        <!-- Basic edit/delete links - functionality to be built -->
-                        <!-- <a href="edit_service.php?id=<?php echo $service['id']; ?>" class="btn btn-sm" style="background-color: #f0ad4e; color:white;">Edit</a> -->
-                        <!-- <a href="delete_service.php?id=<?php echo $service['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this service? This might affect existing invoice items if not handled carefully.');">Delete</a> -->
-                        <span>Edit/Delete (To be implemented)</span>
-                    </td>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th class="text-end">Price</th>
+                    <th>Actions</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($services as $service): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($service['name']); ?></td>
+                        <td><?php echo nl2br(htmlspecialchars($service['description'])); ?></td>
+                        <td class="text-end"><?php echo number_format($service['price'], 2); ?></td>
+                        <td class="actions">
+                           <span class="badge bg-secondary">N/A</span>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 <?php elseif (empty($page_error)): ?>
     <p>No services found. <a href="add_service.php">Add one now!</a></p>
 <?php endif; ?>

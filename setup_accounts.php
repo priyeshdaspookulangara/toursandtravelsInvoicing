@@ -29,6 +29,7 @@ $accounts = [
     ['id' => 31, 'account_name' => 'Service Fees', 'account_type' => 'Revenue', 'description' => 'Revenue from other services like visa processing.'],
     ['id' => 32, 'account_name' => 'Sales Revenue - Air Tickets', 'account_type' => 'Revenue', 'description' => 'Revenue from selling air tickets.'],
     ['id' => 33, 'account_name' => 'Sales Revenue - DTP Services', 'account_type' => 'Revenue', 'description' => 'Revenue from Desktop Publishing services.'],
+    ['id' => 34, 'account_name' => 'Sales Revenue - Tours', 'account_type' => 'Revenue', 'description' => 'Revenue from tour bookings.'],
 
     // Expenses
     ['id' => 40, 'account_name' => 'Salaries and Wages', 'account_type' => 'Expense', 'description' => 'Employee salaries and wages.'],
@@ -39,6 +40,7 @@ $accounts = [
     ['id' => 45, 'account_name' => 'Bank Service Charges', 'account_type' => 'Expense', 'description' => 'Fees charged by the bank.'],
     ['id' => 46, 'account_name' => 'Depreciation Expense', 'account_type' => 'Expense', 'description' => 'Allocation of the cost of fixed assets over their useful life.'],
     ['id' => 47, 'account_name' => 'Cost of Sales - Air Tickets', 'account_type' => 'Expense', 'description' => 'The direct cost of purchasing air tickets for resale.'],
+    ['id' => 48, 'account_name' => 'Cost of Sales - Tours', 'account_type' => 'Expense', 'description' => 'The direct cost of tour packages.'],
 ];
 
 echo "<h3>Setting up Chart of Accounts...</h3>";

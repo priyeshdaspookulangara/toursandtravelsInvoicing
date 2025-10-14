@@ -43,6 +43,11 @@ db_query($dtp_service_sql);
 $dtp_service_id = db_insert_id();
 echo "Created DTP service with ID: $dtp_service_id\n";
 
+$tour_service_sql = "INSERT INTO services (name, description, price) VALUES ('Tour Booking', 'Booking of tour packages', 200.00)";
+db_query($tour_service_sql);
+$tour_service_id = db_insert_id();
+echo "Created Tour Booking service with ID: $tour_service_id\n";
+
 // Airlines (as Vendors)
 db_query("INSERT INTO vendors (name) VALUES ('Emirates')");
 db_query("INSERT INTO vendors (name) VALUES ('Etihad Airways')");

@@ -128,6 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $total_cost_of_sales = 0;
             $has_tickets = false;
             $has_dtp = false;
+            $has_tours = false;
 
             // 2. Insert invoice items and handle ticket-specific logic
             foreach ($invoice_items_data as $item) {
@@ -140,10 +141,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $last_item_id = mysqli_insert_id($conn);
 
                 if ($item['cost_of_sale'] > 0) {
-                    $has_tickets = true;
                     $total_cost_of_sales += $item['cost_of_sale'];
                     // Automatically create a vendor bill for this cost
-                    $bill_desc = "Cost of sale for ticket on Invoice #$invoice_number (Item #$last_item_id)";
+                    $bill_desc = "Cost of sale for item on Invoice #$invoice_number (Item #$last_item_id)";
                     $sql_bill = "INSERT INTO vendor_bills (vendor_id, bill_date, due_date, total_amount, description, status) VALUES (?, ?, ?, ?, ?, 'Unpaid')";
                     $stmt_bill = mysqli_prepare($conn, $sql_bill);
                     mysqli_stmt_bind_param($stmt_bill, "isids", $item['vendor_id'], $invoice_date, $due_date, $item['cost_of_sale'], $bill_desc);
@@ -151,9 +151,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         throw new Exception("Failed to create vendor bill: " . mysqli_stmt_error($stmt_bill));
                     }
                 }
-                // Check if the service is DTP
-                if (strpos(strtolower($item['description']), 'dtp') !== false) {
+                // Check the service type for accounting purposes
+                if (strpos(strtolower($item['description']), 'ticket') !== false) {
+                    $has_tickets = true;
+                } elseif (strpos(strtolower($item['description']), 'dtp') !== false) {
                     $has_dtp = true;
+                } elseif (strpos(strtolower($item['description']), 'tour') !== false) {
+                    $has_tours = true;
                 }
             }
 
@@ -163,6 +167,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_TICKETS;
             } elseif ($has_dtp) {
                 $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_DTP;
+            } elseif ($has_tours) {
+                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_TOURS;
             } else {
                 $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE;
             }
@@ -178,10 +184,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                  throw new Exception("Failed to post sales journal entries.");
             }
 
-            // Cost-side entries (if any tickets were sold)
+            // Cost-side entries
             if ($total_cost_of_sales > 0) {
+                if ($has_tickets) {
+                    $cost_account = ACCOUNT_ID_COST_OF_SALES_TICKETS;
+                } elseif ($has_tours) {
+                    $cost_account = ACCOUNT_ID_COST_OF_SALES_TOURS;
+                } else {
+                    // Fallback, though should ideally be tied to a specific cost account
+                    $cost_account = ACCOUNT_ID_COST_OF_SALES_TICKETS;
+                }
+
                 $cost_entries = [
-                    ['account_id' => ACCOUNT_ID_COST_OF_SALES_TICKETS, 'debit' => $total_cost_of_sales, 'credit' => 0],
+                    ['account_id' => $cost_account, 'debit' => $total_cost_of_sales, 'credit' => 0],
                     ['account_id' => ACCOUNT_ID_ACCOUNTS_PAYABLE, 'debit' => 0, 'credit' => $total_cost_of_sales],
                 ];
                  if (!create_journal_transaction($invoice_date, "Cost of sales for Invoice #{$invoice_number}", $cost_entries, 'invoice_cost', $last_invoice_id)) {
@@ -277,7 +292,8 @@ include 'templates/header.php';
                                         data-price="<?php echo $service['price']; ?>"
                                         data-description="<?php echo htmlspecialchars($service['name']); ?>"
                                         data-is-ticket="<?php echo (strpos(strtolower($service['name']), 'ticket') !== false) ? 'true' : 'false'; ?>"
-                                        data-is-dtp="<?php echo (strpos(strtolower($service['name']), 'dtp') !== false) ? 'true' : 'false'; ?>">
+                                        data-is-dtp="<?php echo (strpos(strtolower($service['name']), 'dtp') !== false) ? 'true' : 'false'; ?>"
+                                        data-is-tour="<?php echo (strpos(strtolower($service['name']), 'tour') !== false) ? 'true' : 'false'; ?>">
                                     <?php echo htmlspecialchars($service['name']); ?>
                                 </option>
                             <?php endforeach; ?>

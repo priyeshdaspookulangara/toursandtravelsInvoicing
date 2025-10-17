@@ -19,44 +19,6 @@ CREATE TABLE IF NOT EXISTS `clients` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for table `vendors`
-CREATE TABLE IF NOT EXISTS `vendors` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(100) NOT NULL,
-  `address` TEXT,
-  `email` VARCHAR(100),
-  `phone` VARCHAR(20),
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table structure for table `vendor_bills`
-CREATE TABLE IF NOT EXISTS `vendor_bills` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `vendor_id` INT NOT NULL,
-    `bill_date` DATE NOT NULL,
-    `due_date` DATE NOT NULL,
-    `total_amount` DECIMAL(10, 2) NOT NULL,
-    `vat_amount` DECIMAL(10, 2) DEFAULT 0.00,
-    `status` ENUM('Unpaid', 'Paid') NOT NULL DEFAULT 'Unpaid',
-    `description` TEXT,
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`vendor_id`) REFERENCES `vendors`(`id`) ON DELETE RESTRICT
-);
-
--- Table structure for table `fixed_assets`
-CREATE TABLE IF NOT EXISTS `fixed_assets` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `asset_name` VARCHAR(255) NOT NULL,
-    `purchase_date` DATE NOT NULL,
-    `cost` DECIMAL(10, 2) NOT NULL,
-    `depreciation_method` ENUM('Straight-Line') NOT NULL DEFAULT 'Straight-Line',
-    `useful_life` INT NOT NULL, -- in years
-    `accumulated_depreciation` DECIMAL(10, 2) DEFAULT 0.00,
-    `last_depreciation_date` DATE DEFAULT NULL,
-    `book_value` DECIMAL(10, 2) GENERATED ALWAYS AS (cost - accumulated_depreciation) STORED,
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Table structure for table `services` (formerly packages)
 CREATE TABLE IF NOT EXISTS `services` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -96,12 +58,10 @@ CREATE TABLE IF NOT EXISTS `invoice_items` (
   `item_description` VARCHAR(255) NOT NULL,
   `quantity` INT NOT NULL DEFAULT 1,
   `unit_price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `unit_type` VARCHAR(20) DEFAULT NULL,
   `total_price` DECIMAL(10, 2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
-  `cost_of_sale` DECIMAL(10, 2) DEFAULT NULL, -- The cost paid to a third-party (e.g., airline)
-  `vendor_id` INT DEFAULT NULL, -- The vendor associated with the cost of sale
   FOREIGN KEY (`invoice_id`) REFERENCES `invoices`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`service_id`) REFERENCES `services`(`id`) ON DELETE SET NULL, -- Allows service deletion without deleting invoice items
-  FOREIGN KEY (`vendor_id`) REFERENCES `vendors`(`id`) ON DELETE SET NULL
+  FOREIGN KEY (`service_id`) REFERENCES `services`(`id`) ON DELETE SET NULL -- Allows service deletion without deleting invoice items
 );
 
 -- Chart of Accounts: The master list of all accounts.
@@ -124,7 +84,6 @@ CREATE TABLE IF NOT EXISTS `general_ledger` (
     `description` VARCHAR(255) NOT NULL,
     `reference_type` VARCHAR(50), -- e.g., 'invoice', 'expense', 'payment'
     `reference_id` INT, -- e.g., invoice_id, expense_id
-    `is_reconciled` BOOLEAN NOT NULL DEFAULT FALSE,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`account_id`) REFERENCES `chart_of_accounts`(`id`),
     CONSTRAINT chk_debit_credit CHECK (debit > 0.00 OR credit > 0.00)
@@ -158,8 +117,3 @@ CREATE INDEX idx_invoice_items_service_id ON invoice_items(service_id);
 CREATE INDEX idx_gl_account_id ON general_ledger(account_id);
 CREATE INDEX idx_gl_reference ON general_ledger(reference_type, reference_id);
 CREATE INDEX idx_expenses_category_id ON expenses(category_id);
-CREATE INDEX idx_vendors_name ON vendors(name);
-CREATE INDEX idx_vendor_bills_vendor_id ON vendor_bills(vendor_id);
-CREATE INDEX idx_vendor_bills_status ON vendor_bills(status);
-CREATE INDEX idx_fixed_assets_asset_name ON fixed_assets(asset_name);
-CREATE INDEX idx_invoice_items_vendor_id ON invoice_items(vendor_id);

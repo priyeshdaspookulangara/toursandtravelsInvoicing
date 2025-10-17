@@ -1,7 +1,7 @@
 <?php
 require_once 'auth.php';
 require_once 'db.php';
-require_once 'controllers/accounting_controller.php';
+require_once 'accounting.php'; // Include the new accounting functions
 
 $page_title = "Create New Invoice";
 $errors = [];
@@ -16,11 +16,6 @@ $clients = db_fetch_all($clients_result);
 $services_sql = "SELECT id, name, price FROM services ORDER BY name ASC";
 $services_result = db_query($services_sql);
 $services = db_fetch_all($services_result);
-
-// Fetch vendors for the new "Airline" dropdown
-$vendors_sql = "SELECT id, name FROM vendors ORDER BY name ASC";
-$vendors_result = db_query($vendors_sql);
-$vendors = db_fetch_all($vendors_result);
 
 // Function to generate a unique invoice number
 function generate_invoice_number() {
@@ -72,18 +67,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $item_description = isset($_POST['item_description'][$i]) ? sanitize_string(trim($_POST['item_description'][$i])) : '';
         $item_quantity = isset($_POST['item_quantity'][$i]) ? sanitize_int($_POST['item_quantity'][$i]) : 0;
         $item_unit_price = isset($_POST['item_unit_price'][$i]) ? sanitize_decimal($_POST['item_unit_price'][$i]) : 0;
-        $item_cost_of_sale = isset($_POST['item_cost_of_sale'][$i]) ? sanitize_decimal($_POST['item_cost_of_sale'][$i]) : 0;
-        $item_vendor_id = isset($_POST['item_vendor_id'][$i]) ? sanitize_int($_POST['item_vendor_id'][$i]) : null;
-
+        $item_unit_type = isset($_POST['item_unit_type'][$i]) ? sanitize_string($_POST['item_unit_type'][$i]) : '';
 
         if (!empty($item_description) && $item_quantity > 0 && $item_unit_price >= 0) {
              if ($item_service_id === false || $item_quantity === false || $item_unit_price === false) {
                 $errors[] = "Invalid data in one of the item rows (row " . ($i+1) . "). Please check numbers.";
-            }
-
-            // If it's a ticket, validate cost of sale and vendor
-            if ($item_cost_of_sale > 0 && empty($item_vendor_id)) {
-                $errors[] = "An airline must be selected for the ticket in row " . ($i+1) . ".";
             }
 
             $item_total = $item_quantity * $item_unit_price;
@@ -93,8 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 'description' => $item_description,
                 'quantity' => $item_quantity,
                 'unit_price' => $item_unit_price,
-                'cost_of_sale' => $item_cost_of_sale,
-                'vendor_id' => $item_vendor_id ?: 'NULL',
+                'unit_type' => $item_unit_type,
             ];
         } elseif (!empty($item_description) || $item_quantity > 0 || $item_unit_price > 0) {
             if (empty($item_description) && $item_quantity > 0) {
@@ -112,108 +99,77 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Calculate financials
         $tax_amount_calculated = ($sub_total * $tax_percentage) / 100;
         $grand_total = $sub_total + $tax_amount_calculated - $discount_amount;
+
         $invoice_number = generate_invoice_number();
+        $s_invoice_number = sanitize_string($invoice_number);
 
-        mysqli_begin_transaction($conn);
-        try {
-            // 1. Insert the main invoice
-            $sql_invoice = "INSERT INTO invoices (invoice_number, client_id, invoice_date, due_date, status, sub_total, tax_percentage, tax_amount, discount_amount, grand_total, amount_paid, payment_terms, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt_invoice = mysqli_prepare($conn, $sql_invoice);
-            mysqli_stmt_bind_param($stmt_invoice, "sisssddddisss", $invoice_number, $client_id, $invoice_date, $due_date, $status, $sub_total, $tax_percentage, $tax_amount_calculated, $discount_amount, $grand_total, $amount_paid, $payment_terms, $notes);
-            if (!mysqli_stmt_execute($stmt_invoice)) {
-                throw new Exception("Failed to create invoice: " . mysqli_stmt_error($stmt_invoice));
-            }
-            $last_invoice_id = mysqli_insert_id($conn);
+        // Begin transaction
+        mysqli_autocommit($conn, false);
+        $queries_ok = true;
 
-            $total_cost_of_sales = 0;
-            $has_tickets = false;
-            $has_dtp = false;
-            $has_tours = false;
+        $sql_invoice = "INSERT INTO invoices (invoice_number, client_id, invoice_date, due_date, status, sub_total, tax_percentage, tax_amount, discount_amount, grand_total, amount_paid, payment_terms, notes) VALUES (
+            '$s_invoice_number', $client_id, '$invoice_date', '$due_date', '$status', $sub_total, $tax_percentage, $tax_amount_calculated, $discount_amount, $grand_total, $amount_paid, '$payment_terms', '$notes'
+        )";
 
-            // 2. Insert invoice items and handle ticket-specific logic
-            foreach ($invoice_items_data as $item) {
-                $sql_item = "INSERT INTO invoice_items (invoice_id, service_id, item_description, quantity, unit_price, cost_of_sale, vendor_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                $stmt_item = mysqli_prepare($conn, $sql_item);
-                mysqli_stmt_bind_param($stmt_item, "iisiddi", $last_invoice_id, $item['service_id'], $item['description'], $item['quantity'], $item['unit_price'], $item['cost_of_sale'], $item['vendor_id']);
-                if (!mysqli_stmt_execute($stmt_item)) {
-                    throw new Exception("Failed to add an invoice item: " . mysqli_stmt_error($stmt_item));
-                }
-                $last_item_id = mysqli_insert_id($conn);
-
-                if ($item['cost_of_sale'] > 0) {
-                    $total_cost_of_sales += $item['cost_of_sale'];
-                    // Automatically create a vendor bill for this cost
-                    $bill_desc = "Cost of sale for item on Invoice #$invoice_number (Item #$last_item_id)";
-                    $sql_bill = "INSERT INTO vendor_bills (vendor_id, bill_date, due_date, total_amount, description, status) VALUES (?, ?, ?, ?, ?, 'Unpaid')";
-                    $stmt_bill = mysqli_prepare($conn, $sql_bill);
-                    mysqli_stmt_bind_param($stmt_bill, "isids", $item['vendor_id'], $invoice_date, $due_date, $item['cost_of_sale'], $bill_desc);
-                    if (!mysqli_stmt_execute($stmt_bill)) {
-                        throw new Exception("Failed to create vendor bill: " . mysqli_stmt_error($stmt_bill));
+        if (db_query($sql_invoice)) {
+            $last_invoice_id = db_insert_id();
+            if ($last_invoice_id) {
+                $has_dtp = false;
+                foreach ($invoice_items_data as $item) {
+                    $item_sql = "INSERT INTO invoice_items (invoice_id, service_id, item_description, quantity, unit_price, unit_type) VALUES (?, ?, ?, ?, ?, ?)";
+                    $stmt_item = mysqli_prepare($conn, $item_sql);
+                    mysqli_stmt_bind_param($stmt_item, "iisids", $last_invoice_id, $item['service_id'], $item['description'], $item['quantity'], $item['unit_price'], $item['unit_type']);
+                    if (!mysqli_stmt_execute($stmt_item)) {
+                        $errors[] = "Failed to add an invoice item: " . mysqli_stmt_error($stmt_item);
+                        $queries_ok = false;
+                        break;
+                    }
+                    if (strpos(strtolower($item['description']), 'dtp') !== false) {
+                        $has_dtp = true;
                     }
                 }
-                // Check the service type for accounting purposes
-                if (strpos(strtolower($item['description']), 'ticket') !== false) {
-                    $has_tickets = true;
-                } elseif (strpos(strtolower($item['description']), 'dtp') !== false) {
-                    $has_dtp = true;
-                } elseif (strpos(strtolower($item['description']), 'tour') !== false) {
-                    $has_tours = true;
-                }
-            }
-
-            // 3. Create journal entries
-            // Sales-side entries
-            if ($has_tickets) {
-                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_TICKETS;
-            } elseif ($has_dtp) {
-                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_DTP;
-            } elseif ($has_tours) {
-                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE_TOURS;
             } else {
-                $sales_revenue_account = ACCOUNT_ID_SALES_REVENUE;
+                $errors[] = "Failed to retrieve last invoice ID.";
+                $queries_ok = false;
             }
+        } else {
+            $errors[] = "Failed to create invoice: " . mysqli_error($conn);
+            $queries_ok = false;
+        }
 
-            $sales_entries = [
+        // If invoice saved, now post to General Ledger
+        if ($queries_ok) {
+            $sales_revenue_account = $has_dtp ? ACCOUNT_ID_SALES_REVENUE_DTP : ACCOUNT_ID_SALES_REVENUE;
+            $journal_entries = [
+                // Debit Accounts Receivable for the grand total
                 ['account_id' => ACCOUNT_ID_ACCOUNTS_RECEIVABLE, 'debit' => $grand_total, 'credit' => 0],
+                // Credit Sales Revenue for the sub-total
                 ['account_id' => $sales_revenue_account, 'debit' => 0, 'credit' => $sub_total],
             ];
+            // Add VAT entry only if there is tax
             if ($tax_amount_calculated > 0) {
-                $sales_entries[] = ['account_id' => ACCOUNT_ID_VAT_PAYABLE, 'debit' => 0, 'credit' => $tax_amount_calculated];
-            }
-            if (!create_journal_transaction($invoice_date, "Invoice #{$invoice_number} generated.", $sales_entries, 'invoice', $last_invoice_id)) {
-                 throw new Exception("Failed to post sales journal entries.");
+                $journal_entries[] = ['account_id' => ACCOUNT_ID_VAT_PAYABLE, 'debit' => 0, 'credit' => $tax_amount_calculated];
             }
 
-            // Cost-side entries
-            if ($total_cost_of_sales > 0) {
-                if ($has_tickets) {
-                    $cost_account = ACCOUNT_ID_COST_OF_SALES_TICKETS;
-                } elseif ($has_tours) {
-                    $cost_account = ACCOUNT_ID_COST_OF_SALES_TOURS;
-                } else {
-                    // Fallback, though should ideally be tied to a specific cost account
-                    $cost_account = ACCOUNT_ID_COST_OF_SALES_TICKETS;
-                }
+            $journal_description = "Invoice #{$invoice_number} generated.";
 
-                $cost_entries = [
-                    ['account_id' => $cost_account, 'debit' => $total_cost_of_sales, 'credit' => 0],
-                    ['account_id' => ACCOUNT_ID_ACCOUNTS_PAYABLE, 'debit' => 0, 'credit' => $total_cost_of_sales],
-                ];
-                 if (!create_journal_transaction($invoice_date, "Cost of sales for Invoice #{$invoice_number}", $cost_entries, 'invoice_cost', $last_invoice_id)) {
-                    throw new Exception("Failed to post cost of sales journal entries.");
-                }
+            if (!create_journal_transaction($invoice_date, $journal_description, $journal_entries, 'invoice', $last_invoice_id)) {
+                $errors[] = "Failed to post accounting entries to the general ledger.";
+                $queries_ok = false;
             }
+        }
 
-            // If all queries were successful
-            mysqli_commit($conn);
+
+        if ($queries_ok) {
+            mysqli_commit($conn); // Commit transaction
             $_SESSION['message'] = "Invoice " . htmlspecialchars($invoice_number) . " created successfully!";
             header("Location: view_invoice.php?id=" . $last_invoice_id);
             exit;
-
-        } catch (Exception $e) {
-            mysqli_rollback($conn);
-            $errors[] = $e->getMessage();
+        } else {
+            mysqli_rollback($conn); // Rollback transaction
+            $errors[] = "Invoice creation failed. Transaction rolled back.";
         }
+        mysqli_autocommit($conn, true); // Restore autocommit
     }
 }
 
@@ -276,24 +232,18 @@ include 'templates/header.php';
                     <th>Custom Description</th>
                     <th>Qty</th>
                     <th>Unit Price</th>
-                    <th class="ticket-only-header" style="display: none;">Cost of Sale</th>
-                    <th class="ticket-only-header" style="display: none;">Airline</th>
+                    <th class="dtp-col" style="display:none;">Unit Type</th>
                     <th>Total</th>
                 </tr>
             </thead>
             <tbody>
                 <?php for ($i = 0; $i < 5; $i++): ?>
-                <tr id="item-row-<?php echo $i; ?>">
+                <tr class="item-row">
                     <td>
                         <select name="item_service_id[]" class="service-select" data-row-id="<?php echo $i; ?>">
                             <option value="">Custom Item</option>
                             <?php foreach ($services as $service): ?>
-                                <option value="<?php echo $service['id']; ?>"
-                                        data-price="<?php echo $service['price']; ?>"
-                                        data-description="<?php echo htmlspecialchars($service['name']); ?>"
-                                        data-is-ticket="<?php echo (strpos(strtolower($service['name']), 'ticket') !== false) ? 'true' : 'false'; ?>"
-                                        data-is-dtp="<?php echo (strpos(strtolower($service['name']), 'dtp') !== false) ? 'true' : 'false'; ?>"
-                                        data-is-tour="<?php echo (strpos(strtolower($service['name']), 'tour') !== false) ? 'true' : 'false'; ?>">
+                                <option value="<?php echo $service['id']; ?>" data-price="<?php echo $service['price']; ?>" data-description="<?php echo htmlspecialchars($service['name']); ?>" data-is-dtp="<?php echo (strpos(strtolower($service['name']), 'dtp') !== false) ? 'true' : 'false'; ?>">
                                     <?php echo htmlspecialchars($service['name']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -302,15 +252,11 @@ include 'templates/header.php';
                     <td><input type="text" name="item_description[]" class="item-description" id="item_description_<?php echo $i; ?>" placeholder="Service Details"></td>
                     <td><input type="number" name="item_quantity[]" class="item-quantity" id="item_quantity_<?php echo $i; ?>" value="1" min="0" step="1"></td>
                     <td><input type="text" name="item_unit_price[]" class="item-unit-price" id="item_unit_price_<?php echo $i; ?>" placeholder="0.00" pattern="^\d+(\.\d{1,2})?$"></td>
-                    <td class="ticket-only-cell" style="display: none;">
-                        <input type="text" name="item_cost_of_sale[]" class="item-cost-of-sale" id="item_cost_of_sale_<?php echo $i; ?>" placeholder="0.00">
-                    </td>
-                    <td class="ticket-only-cell" style="display: none;">
-                        <select name="item_vendor_id[]" class="item-vendor-id" id="item_vendor_id_<?php echo $i; ?>">
-                            <option value="">Select Airline</option>
-                            <?php foreach ($vendors as $vendor): ?>
-                                <option value="<?php echo $vendor['id']; ?>"><?php echo htmlspecialchars($vendor['name']); ?></option>
-                            <?php endforeach; ?>
+                    <td class="dtp-col" style="display:none;">
+                        <select name="item_unit_type[]" class="form-select">
+                            <option value="Pages">Pages</option>
+                            <option value="Hours">Hours</option>
+                            <option value="Project">Project</option>
                         </select>
                     </td>
                     <td><input type="text" name="item_total[]" class="item-total" readonly tabindex="-1"></td>
@@ -372,34 +318,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const discountAmountInput = document.getElementById('discount_amount');
 
     function updateItemRow(rowId, selectedService) {
-        const descriptionInput = document.getElementById('item_description_' + rowId);
-        const unitPriceInput = document.getElementById('item_unit_price_' + rowId);
-        const row = document.getElementById('item-row-' + rowId);
-        const ticketCells = row.querySelectorAll('.ticket-only-cell');
-        let isTicket = false;
+        const row = document.querySelector(`#invoiceItemsTable tbody tr:nth-child(${parseInt(rowId) + 1})`);
+        const descriptionInput = row.querySelector('.item-description');
+        const unitPriceInput = row.querySelector('.item-unit-price');
+        const dtpCol = row.querySelector('.dtp-col');
 
         if (selectedService && selectedService.value !== "") {
             const selectedOption = selectedService.options[selectedService.selectedIndex];
             const price = selectedOption.getAttribute('data-price');
             const description = selectedOption.getAttribute('data-description');
-            isTicket = selectedOption.getAttribute('data-is-ticket') === 'true';
+            const isDtp = selectedOption.getAttribute('data-is-dtp') === 'true';
 
             unitPriceInput.value = parseFloat(price).toFixed(2);
             descriptionInput.value = description;
+            dtpCol.style.display = isDtp ? '' : 'none';
+        } else {
+            dtpCol.style.display = 'none';
         }
 
-        // Show/hide the ticket-specific cells
-        ticketCells.forEach(cell => {
-            cell.style.display = isTicket ? '' : 'none';
-        });
-
-        // Show/hide all ticket headers if any ticket item is selected
-        const anyTicketSelected = Array.from(document.querySelectorAll('.service-select')).some(select => {
-            return select.options[select.selectedIndex]?.getAttribute('data-is-ticket') === 'true';
-        });
-        document.querySelectorAll('.ticket-only-header').forEach(header => {
-            header.style.display = anyTicketSelected ? '' : 'none';
-        });
+        const anyDtp = Array.from(document.querySelectorAll('.service-select')).some(s => s.options[s.selectedIndex]?.dataset.isDtp === 'true');
+        document.querySelectorAll('.dtp-col').forEach(th => th.style.display = anyDtp ? '' : 'none');
 
         calculateRowTotal(rowId);
     }

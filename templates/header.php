@@ -5,84 +5,86 @@ if (session_status() == PHP_SESSION_NONE) {
 require_once __DIR__ . '/../config.php';
 
 // Define a function to generate breadcrumbs
-function get_breadcrumbs() {
-    $path = basename($_SERVER['SCRIPT_NAME']);
-    $breadcrumbs = [];
+if (!function_exists('get_breadcrumbs')) {
+    function get_breadcrumbs() {
+        $path = basename($_SERVER['SCRIPT_NAME']);
+        $breadcrumbs = [];
 
-    if ($path == 'index.php' || $path == '') {
-        $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Dashboard</li>';
-    } else {
-        $breadcrumbs[] = '<li class="breadcrumb-item"><a href="' . APP_BASE_URL . 'index.php">Dashboard</a></li>';
-    }
-
-    // Don't add another breadcrumb for the dashboard itself
-    if ($path != 'index.php' && $path != '') {
-        switch ($path) {
-            case 'create_invoice.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Create Invoice</li>';
-                break;
-            case 'edit_invoice.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Edit Invoice</li>';
-                break;
-            case 'view_invoice.php':
-                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">View Invoice</li>';
-                break;
-            case 'list_clients.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Clients</li>';
-                break;
-            case 'add_client.php':
-                 $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_clients.php">Manage Clients</a></li>';
-                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Client</li>';
-                break;
-            case 'list_vendors.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Vendors</li>';
-                break;
-            case 'add_vendor.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_vendors.php">Manage Vendors</a></li>';
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Vendor</li>';
-                break;
-            case 'list_services.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Services</li>';
-                break;
-            case 'add_service.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_services.php">Manage Services</a></li>';
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Service</li>';
-                break;
-            case 'list_expenses.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Expenses</li>';
-                break;
-            case 'add_expense.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_expenses.php">Manage Expenses</a></li>';
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Expense</li>';
-                break;
-            case 'list_fixed_assets.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Fixed Asset Register</li>';
-                break;
-            case 'add_fixed_asset.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_fixed_assets.php">Fixed Asset Register</a></li>';
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Fixed Asset</li>';
-                break;
-            case 'bank_reconciliation.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Bank Reconciliation</li>';
-                break;
-            case 'report_profit_loss.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Profit & Loss Report</li>';
-                break;
-            case 'report_vat.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">VAT Report</li>';
-                break;
-            case 'report_trial_balance.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Trial Balance Report</li>';
-                break;
-            case 'report_balance_sheet.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Balance Sheet Report</li>';
-                break;
-            case 'report_ap_aging.php':
-                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">A/P Aging Report</li>';
-                break;
+        if ($path == 'index.php' || $path == '') {
+            $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Dashboard</li>';
+        } else {
+            $breadcrumbs[] = '<li class="breadcrumb-item"><a href="' . APP_BASE_URL . 'index.php">Dashboard</a></li>';
         }
+
+        // Don't add another breadcrumb for the dashboard itself
+        if ($path != 'index.php' && $path != '') {
+            switch ($path) {
+                case 'create_invoice.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Create Invoice</li>';
+                    break;
+                case 'edit_invoice.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Edit Invoice</li>';
+                    break;
+                case 'view_invoice.php':
+                     $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">View Invoice</li>';
+                    break;
+                case 'list_clients.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Clients</li>';
+                    break;
+                case 'add_client.php':
+                     $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_clients.php">Manage Clients</a></li>';
+                     $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Client</li>';
+                    break;
+                case 'list_vendors.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Vendors</li>';
+                    break;
+                case 'add_vendor.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_vendors.php">Manage Vendors</a></li>';
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Vendor</li>';
+                    break;
+                case 'list_services.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Services</li>';
+                    break;
+                case 'add_service.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_services.php">Manage Services</a></li>';
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Service</li>';
+                    break;
+                case 'list_expenses.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Manage Expenses</li>';
+                    break;
+                case 'add_expense.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_expenses.php">Manage Expenses</a></li>';
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Expense</li>';
+                    break;
+                case 'list_fixed_assets.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Fixed Asset Register</li>';
+                    break;
+                case 'add_fixed_asset.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item"><a href="list_fixed_assets.php">Fixed Asset Register</a></li>';
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Add Fixed Asset</li>';
+                    break;
+                case 'bank_reconciliation.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Bank Reconciliation</li>';
+                    break;
+                case 'report_profit_loss.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Profit & Loss Report</li>';
+                    break;
+                case 'report_vat.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">VAT Report</li>';
+                    break;
+                case 'report_trial_balance.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Trial Balance Report</li>';
+                    break;
+                case 'report_balance_sheet.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Balance Sheet Report</li>';
+                    break;
+                case 'report_ap_aging.php':
+                    $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">A/P Aging Report</li>';
+                    break;
+            }
+        }
+        return implode('', $breadcrumbs);
     }
-    return implode('', $breadcrumbs);
 }
 ?>
 <!DOCTYPE html>

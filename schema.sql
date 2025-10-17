@@ -50,6 +50,41 @@ CREATE TABLE IF NOT EXISTS `invoices` (
   FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE RESTRICT -- Or ON DELETE CASCADE if appropriate
 );
 
+-- Table structure for table `ticket_bookings`
+CREATE TABLE IF NOT EXISTS `ticket_bookings` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `invoice_no` VARCHAR(50) NOT NULL UNIQUE,
+  `issue_date` DATE NOT NULL,
+  `pnr` VARCHAR(50) NOT NULL,
+  `ticket_no` VARCHAR(50) NOT NULL,
+  `client_id` INT,
+  `client_name` VARCHAR(100) NOT NULL,
+  `client_email` VARCHAR(100),
+  `client_address` TEXT,
+  `currency` VARCHAR(10) NOT NULL,
+  `base_fare` DECIMAL(10, 2) NOT NULL,
+  `taxes` DECIMAL(10, 2) NOT NULL,
+  `agency_fee` DECIMAL(10, 2) NOT NULL,
+  `total_amount` DECIMAL(10, 2) NOT NULL,
+  `payment_status` VARCHAR(20) NOT NULL,
+  `payment_method` VARCHAR(50),
+  `notes` TEXT,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE SET NULL
+);
+
+-- Table structure for table `ticket_passengers`
+CREATE TABLE IF NOT EXISTS `ticket_passengers` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `booking_id` INT NOT NULL,
+  `passenger_name` VARCHAR(100) NOT NULL,
+  `airline` VARCHAR(100),
+  `flight_no` VARCHAR(20),
+  `route` VARCHAR(100),
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`booking_id`) REFERENCES `ticket_bookings`(`id`) ON DELETE CASCADE
+);
+
 -- Table structure for table `invoice_items`
 CREATE TABLE IF NOT EXISTS `invoice_items` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -117,3 +152,5 @@ CREATE INDEX idx_invoice_items_service_id ON invoice_items(service_id);
 CREATE INDEX idx_gl_account_id ON general_ledger(account_id);
 CREATE INDEX idx_gl_reference ON general_ledger(reference_type, reference_id);
 CREATE INDEX idx_expenses_category_id ON expenses(category_id);
+CREATE INDEX idx_ticket_bookings_client_id ON ticket_bookings(client_id);
+CREATE INDEX idx_ticket_passengers_booking_id ON ticket_passengers(booking_id);

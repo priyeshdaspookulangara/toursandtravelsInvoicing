@@ -81,6 +81,7 @@ if (!function_exists('get_breadcrumbs')) {
             case 'report_ap_aging.php':
                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">A/P Aging Report</li>';
                 break;
+            }
         }
     }
 

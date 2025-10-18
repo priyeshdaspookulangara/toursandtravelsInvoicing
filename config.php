@@ -27,6 +27,7 @@ define('ACCOUNT_ID_SALES_REVENUE', 30); // Corrected from 10
 define('ACCOUNT_ID_VAT_PAYABLE', 11);
 define('ACCOUNT_ID_SALES_REVENUE_DTP', 33);
 define('ACCOUNT_ID_SALES_REVENUE_TICKETS', 32);
+define('ACCOUNT_ID_SALES_REVENUE_TOURS', 34);
 
 // Error reporting - Force display for debugging
 ini_set('display_errors', 1);

@@ -24,6 +24,9 @@ function get_breadcrumbs() {
             case 'add_ticket_booking.php':
                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">New Ticket Booking</li>';
                 break;
+            case 'add_tour_booking.php':
+                $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">New Tour Booking</li>';
+                break;
             case 'edit_invoice.php':
                 $breadcrumbs[] = '<li class="breadcrumb-item active" aria-current="page">Edit Invoice</li>';
                 break;
@@ -87,6 +90,7 @@ function get_breadcrumbs() {
             <ul class="list-unstyled components">
                 <li><a href="<?php echo APP_BASE_URL; ?>index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>add_ticket_booking.php"><i class="fas fa-plane"></i> New Ticket Booking</a></li>
+                <li><a href="<?php echo APP_BASE_URL; ?>add_tour_booking.php"><i class="fas fa-map-marked-alt"></i> New Tour Booking</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>create_invoice.php"><i class="fas fa-plus"></i> Create Invoice</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>list_clients.php"><i class="fas fa-users"></i> Manage Clients</a></li>
                 <li><a href="<?php echo APP_BASE_URL; ?>list_services.php"><i class="fas fa-concierge-bell"></i> Manage Services</a></li>

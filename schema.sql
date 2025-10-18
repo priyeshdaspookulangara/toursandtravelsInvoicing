@@ -85,6 +85,25 @@ CREATE TABLE IF NOT EXISTS `ticket_passengers` (
   FOREIGN KEY (`booking_id`) REFERENCES `ticket_bookings`(`id`) ON DELETE CASCADE
 );
 
+-- Table structure for table `tour_bookings`
+CREATE TABLE IF NOT EXISTS `tour_bookings` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `invoice_no` VARCHAR(50) NOT NULL UNIQUE,
+  `booking_date` DATE NOT NULL,
+  `client_id` INT,
+  `client_name` VARCHAR(100) NOT NULL,
+  `package_name` VARCHAR(255) NOT NULL,
+  `destination` VARCHAR(255),
+  `travel_date_start` DATE,
+  `travel_date_end` DATE,
+  `number_of_travelers` INT,
+  `total_cost` DECIMAL(10, 2) NOT NULL,
+  `payment_status` VARCHAR(20) NOT NULL,
+  `notes` TEXT,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE SET NULL
+);
+
 -- Table structure for table `invoice_items`
 CREATE TABLE IF NOT EXISTS `invoice_items` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -154,3 +173,4 @@ CREATE INDEX idx_gl_reference ON general_ledger(reference_type, reference_id);
 CREATE INDEX idx_expenses_category_id ON expenses(category_id);
 CREATE INDEX idx_ticket_bookings_client_id ON ticket_bookings(client_id);
 CREATE INDEX idx_ticket_passengers_booking_id ON ticket_passengers(booking_id);
+CREATE INDEX idx_tour_bookings_client_id ON tour_bookings(client_id);

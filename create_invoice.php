@@ -89,12 +89,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $item_total = $item_quantity * $item_unit_price;
             $sub_total += $item_total;
             $invoice_items_data[] = [
-                'service_id' => $item_service_id ?: 'NULL',
+                'service_id' => $item_service_id ?: null,
                 'description' => $item_description,
                 'quantity' => $item_quantity,
                 'unit_price' => $item_unit_price,
                 'cost_of_sale' => $item_cost_of_sale,
-                'vendor_id' => $item_vendor_id ?: 'NULL',
+                'vendor_id' => $item_vendor_id ?: null,
             ];
         } elseif (!empty($item_description) || $item_quantity > 0 || $item_unit_price > 0) {
             if (empty($item_description) && $item_quantity > 0) {
@@ -132,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // 2. Insert invoice items and handle ticket-specific logic
             foreach ($invoice_items_data as $item) {
-                $sql_item = "INSERT INTO invoice_items (invoice_id, service_id, item_description, quantity, unit_price, cost_of_sale, vendor_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $sql_item = "INSERT INTO invoice_items (invoice_id, service_id, description, quantity, unit_price, cost_of_sale, vendor_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt_item = mysqli_prepare($conn, $sql_item);
                 mysqli_stmt_bind_param($stmt_item, "iisiddi", $last_invoice_id, $item['service_id'], $item['description'], $item['quantity'], $item['unit_price'], $item['cost_of_sale'], $item['vendor_id']);
                 if (!mysqli_stmt_execute($stmt_item)) {

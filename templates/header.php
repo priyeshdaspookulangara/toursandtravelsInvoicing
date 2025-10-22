@@ -84,6 +84,7 @@ if (!function_exists('get_breadcrumbs')) {
         }
     }
     return implode('', $breadcrumbs);
+    }
 }
 ?>
 <!DOCTYPE html>
